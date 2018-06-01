@@ -1,0 +1,192 @@
+---
+title: 'Analysis for "Taking Control of Regulations"'
+author:
+- name: Andrew Heiss
+  affiliation: Brigham Young University
+date: "Last run: `r format(Sys.time(), '%B %e, %Y')`"
+output: 
+  html_document: 
+    highlight: pygments
+    theme: sandstone
+    code_folding: hide
+---
+
+```{r load-libraries, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(magrittr)
+library(scales)
+library(patchwork)
+library(sf)
+library(ggrepel)
+library(ggstance)
+library(pander)
+library(here)
+
+pound <- dollar_format(prefix = "£")
+
+source(file.path(here(), "lib", "graphic-functions.R"))
+```
+
+# Article 19 budget and staff over time
+
+```{r a19-budget-staff, message=FALSE}
+a19_budget <- read_csv(file.path(here(), "data", "a19_budget.csv")) 
+
+a19_budget_long <- a19_budget %>%
+  gather(key, value, -Year) %>%
+  mutate(type = ifelse(key == "Staff", "Staff", "Budget"))
+
+plot_budget <- ggplot(filter(a19_budget_long, type == "Budget"),
+                      aes(x = Year, y = value, color = key)) +
+  geom_line(size = 1) +
+  labs(x = NULL, y = "Reported amount") +
+  scale_y_continuous(labels = pound) +
+  scale_color_manual(values = c(ngo_red, ngo_blue_dk), name = NULL) +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_staff <- ggplot(filter(a19_budget_long, type == "Staff"),
+                     aes(x = Year, y = value)) +
+  geom_line(size = 1, color = ngo_orange) +
+  labs(x = NULL, y = "Full time employees") +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_budget_staff <- plot_budget + plot_staff + 
+  plot_layout(ncol = 1, heights = c(1, 0.5))
+
+plot_budget_staff %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "a19-budget-staff.pdf"),
+         width = 4.5, height = 3, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "a19-budget-staff.png"),
+         width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300)
+```
+
+\
+
+Average income per year: `r a19_budget$Income %>% mean() %>% pound()`
+
+Annual income, expenses, and surplus:
+
+```{r a19-budget-staff-tbl, results="asis"}
+a19_budget %>%
+  mutate(Surplus = Income - Expenses) %>%
+  mutate_at(vars(Income, Expenses, Surplus), funs(pound)) %>% 
+  pandoc.table(justify = "lllll")
+```
+
+
+# Regional expenses over time
+
+Absolute expenses:
+
+```{r a19-regional-expenses-abs, message=FALSE}
+a19_regional <- read_csv(file.path(here(), "data", "a19_regional_expenses.csv")) %>%
+  filter(!(Category %in% c("Governance", "Fundraising", "Law and policy"))) %>%
+  mutate(Category = ordered(fct_relevel(Category, "Global"))) %>%
+  group_by(Year, Category) %>%
+  summarise(Amount = sum(Amount))
+
+plot_regions <- ggplot(a19_regional, aes(x = Year, y = Amount)) +
+  geom_line(size = 1, color = ngo_red) +
+  labs(x = NULL, y = "Reported expenditures") +
+  scale_y_continuous(labels = pound) +
+  expand_limits(y = 0) +
+  theme_ngo(9) +
+  facet_wrap(~ Category)
+
+plot_regions %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-abs.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-abs.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
+
+\
+
+Percent-based expenses:
+
+```{r a19-regional-expenses-pct}
+a19_percent <- a19_regional %>%
+  group_by(Year) %>%
+  mutate(total = sum(Amount),
+         percent = Amount / total)
+
+plot_percent <- ggplot(a19_percent, aes(x = Year, y = percent)) +
+  geom_line(size = 1, color = ngo_blue_dk) +
+  labs(x = NULL, y = "Percent spent on region") +
+  scale_y_continuous(labels = percent) +
+  expand_limits(y = 0) +
+  theme_ngo(9) +
+  facet_wrap(~ Category)
+
+plot_percent %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-pct.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-pct.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
+
+
+# Regional offices
+
+```{r a19-regional-offices, warning=FALSE, message=FALSE}
+# Robinson projection
+projection = 54030
+
+world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
+                                  "ne_110m_admin_0_countries.shp"),
+                        quiet = TRUE) %>% 
+  filter(ISO_A3 != "ATA")
+
+a19_offices <- read_csv(file.path(here(), "data", "a19_offices.csv")) %>% 
+  # Convert lat/long to actual geometry object and convert to correct projection
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
+  st_transform(projection) %>% 
+  # Extract converted lat/long for use with geom_label_repel
+  mutate(long = st_coordinates(.)[, 1], lat = st_coordinates(.)[, 2])
+
+plot_a19_offices <- ggplot() +
+  geom_sf(data = world_shapes, size = 0.15, color = "black", fill = "grey90") +
+  geom_sf(data = a19_offices) +
+  geom_label_repel(data = a19_offices, seed = 1234,
+                   aes(x = long, y = lat, label = office, fill = hq), 
+                   size = 3, color = "white") +
+  coord_sf(crs = st_crs(projection), datum = NA) +
+  scale_fill_manual(values = c(ngo_blue_dk, ngo_red), guide = FALSE) +
+  theme_ngo_map()
+
+plot_a19_offices %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "a19-offices.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "a19-offices.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
+
+
+# Reports in the Middle East
+
+Middle Eastern countries where Article 19 has issues 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the [Resources database](https://www.article19.org/resources.php?action=resourcesearch&search=test&lang=en).
+
+```{r a19-me-reports, message=FALSE, fig.width=4.5, fig.height=2}
+a19_me <- read_csv(file.path(here(), "data", "a19_me_reports.csv"))  %>%
+  arrange(reports) %>%
+  mutate(country = fct_inorder(country))
+
+plot_me_reports <- ggplot(a19_me, aes(x = reports, y = country, color = hq)) + 
+  geom_pointrangeh(aes(xmin = 0, xmax = reports)) +
+  labs(x = "Advocacy letters, reports, statements, and updates", y = NULL) +
+  scale_colour_manual(values = c(ngo_blue_dk, ngo_red), guide = FALSE) +
+  theme_ngo() + theme(panel.grid.major.y = element_blank())
+
+plot_me_reports %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "a19-me-reports.pdf"),
+         width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "a19-me-reports.png"),
+         width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
+```
