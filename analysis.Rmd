@@ -170,7 +170,7 @@ plot_a19_offices %T>%
 
 # Reports in the Middle East
 
-Middle Eastern countries where Article 19 has issues 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the [Resources database](https://www.article19.org/resources.php?action=resourcesearch&search=test&lang=en).
+Middle Eastern countries where Article 19 has issued 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the [Resources database](https://www.article19.org/resources.php?action=resourcesearch&search=test&lang=en).
 
 ```{r a19-me-reports, message=FALSE, fig.width=4.5, fig.height=2}
 a19_me <- read_csv(file.path(here(), "data", "a19_me_reports.csv"))  %>%

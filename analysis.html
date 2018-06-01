@@ -683,7 +683,7 @@ Brigham Young University<br><h4 class="date"><em>Last run: June 1, 2018</em></h4
 </div>
 <div id="reports-in-the-middle-east" class="section level1">
 <h1>Reports in the Middle East</h1>
-<p>Middle Eastern countries where Article 19 has issues 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the <a href="https://www.article19.org/resources.php?action=resourcesearch&amp;search=test&amp;lang=en">Resources database</a>.</p>
+<p>Middle Eastern countries where Article 19 has issued 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the <a href="https://www.article19.org/resources.php?action=resourcesearch&amp;search=test&amp;lang=en">Resources database</a>.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">a19_me &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;data&quot;</span>, <span class="st">&quot;a19_me_reports.csv&quot;</span>))  <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-2" data-line-number="2"><span class="st">  </span><span class="kw">arrange</span>(reports) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-3" data-line-number="3"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">country =</span> <span class="kw">fct_inorder</span>(country))</a>
