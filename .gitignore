@@ -8,7 +8,6 @@ manuscript/vc*
 
 # Other folders
 admin
-data
 !output/*.pdf
 
 # R stuff
