@@ -38,16 +38,44 @@ world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
 
 # CIVICUS restrictions
 
-```{r civicus-map, warning=FALSE, message=FALSE}
-rating_levels <- c("Open", "Narrowed", "Obstructed", "Repressed", "Closed")
-
+```{r civicus-data, warning=FALSE, message=FALSE}
 # Data from the Tableau visualizations at https://monitor.civicus.org/findings/
 civicus <- read_csv(file.path(here(), "data", "civicus_monitor_2017.csv"),
                     na = "Null") %>%
   mutate(Population = as.double(Population),  # integers can't handle world population
-         Rating = factor(Rating, levels = rating_levels, ordered = TRUE),
+         Rating = factor(Rating, levels = c("Open", "Narrowed", "Obstructed", 
+                                            "Repressed", "Closed"), 
+                         ordered = TRUE),
          iso3 = countrycode(Country, "country.name", "iso3c"))
+```
 
+```{r civicus-population}
+civicus_population <- civicus %>%
+  group_by(Rating) %>%
+  summarise(pop_per_rating = sum(Population),
+            perc_per_rating = pop_per_rating / sum(civicus$Population)) %>% 
+  mutate(open = Rating == "Open")
+
+plot_civicus_population <- ggplot(civicus_population, 
+                                  aes(x = perc_per_rating, y = fct_rev(Rating),
+                                      color = Rating)) + 
+  geom_pointrangeh(aes(xmin = 0, xmax = perc_per_rating)) +
+  labs(x = "Percent of world population", y = NULL) +
+  scale_x_continuous(labels = percent) +
+  scale_colour_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
+                               ngo_orange, ngo_red), 
+                      guide = FALSE) +
+  theme_ngo() + theme(panel.grid.major.y = element_blank())
+
+plot_civicus_population %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "civicus-population.pdf"),
+         width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "civicus-population.png"),
+         width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
+```
+
+```{r civicus-map}
 map_with_civicus <- world_shapes %>% 
   # Fix some Natural Earth ISO weirdness
   mutate(ISO_A3 = ifelse(ISO_A3 == "-99", as.character(ISO_A3_EH), as.character(ISO_A3))) %>% 
@@ -64,8 +92,7 @@ plot_civicus_map <- ggplot() +
   scale_fill_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
                                ngo_orange, ngo_red), 
                     na.translate = FALSE, name = "Civic space") +
-  theme_ngo_map() +
-  theme(legend.key.size = unit(0.7, "lines"))
+  theme_ngo_map() + theme(legend.key.size = unit(0.7, "lines"))
 
 plot_civicus_map %T>% 
   print() %T>%
