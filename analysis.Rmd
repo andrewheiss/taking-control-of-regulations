@@ -20,12 +20,61 @@ library(sf)
 library(ggrepel)
 library(ggstance)
 library(pander)
+library(countrycode)
 library(here)
 
 pound <- dollar_format(prefix = "£")
 
 source(file.path(here(), "lib", "graphic-functions.R"))
+
+# Robinson projection
+projection = 54030
+
+world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
+                                  "ne_110m_admin_0_countries.shp"),
+                        quiet = TRUE) %>% 
+  filter(ISO_A3 != "ATA")
 ```
+
+# CIVICUS restrictions
+
+```{r civicus-map, warning=FALSE, message=FALSE}
+rating_levels <- c("Open", "Narrowed", "Obstructed", "Repressed", "Closed")
+
+# Data from the Tableau visualizations at https://monitor.civicus.org/findings/
+civicus <- read_csv(file.path(here(), "data", "civicus_monitor_2017.csv"),
+                    na = "Null") %>%
+  mutate(Population = as.double(Population),  # integers can't handle world population
+         Rating = factor(Rating, levels = rating_levels, ordered = TRUE),
+         iso3 = countrycode(Country, "country.name", "iso3c"))
+
+map_with_civicus <- world_shapes %>% 
+  # Fix some Natural Earth ISO weirdness
+  mutate(ISO_A3 = ifelse(ISO_A3 == "-99", as.character(ISO_A3_EH), as.character(ISO_A3))) %>% 
+  mutate(ISO_A3 = case_when(
+    .$ISO_A3 == "GRL" ~ "DNK",
+    .$NAME == "Norway" ~ "NOR",
+    TRUE ~ ISO_A3
+  )) %>% 
+  left_join(civicus, by = c("ISO_A3" = "iso3"))
+
+plot_civicus_map <- ggplot() +
+  geom_sf(data = map_with_civicus, aes(fill = Rating), size = 0.15, color = "black") +
+  coord_sf(crs = st_crs(projection), datum = NA) +
+  scale_fill_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
+                               ngo_orange, ngo_red), 
+                    na.translate = FALSE, name = "Civic space") +
+  theme_ngo_map() +
+  theme(legend.key.size = unit(0.7, "lines"))
+
+plot_civicus_map %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "civicus-map.pdf"),
+         width = 5.5, height = 3, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "civicus-map.png"),
+         width = 5.5, height = 3, units = "in", type = "cairo", dpi = 300)
+```
+
 
 # Article 19 budget and staff over time
 
@@ -134,14 +183,6 @@ plot_percent %T>%
 # Regional offices
 
 ```{r a19-regional-offices, warning=FALSE, message=FALSE}
-# Robinson projection
-projection = 54030
-
-world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
-                                  "ne_110m_admin_0_countries.shp"),
-                        quiet = TRUE) %>% 
-  filter(ISO_A3 != "ATA")
-
 a19_offices <- read_csv(file.path(here(), "data", "a19_offices.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
