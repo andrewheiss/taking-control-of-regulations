@@ -149,6 +149,17 @@ Additionally, Article 19 has been able to use Tunisia as a regional home base. E
 The laws impeding Article 19's work are generally designed to make operating an INGO abroad more difficult and costly. Article 19 has been able to adapt to these increasingly onerous gatekeeping regulations by relying on its large budget, its large menu of possible programs, its longstanding host government partnerships, and its network of regional offices. By drawing on these resources, the organization has been able to remain active in dozens of countries.
 
 
+# Conclusion
+
+By relying on government grants and establishing a handful of regional offices, Article 19 has been able to maintain a nearly global reach since its decision to spread out of its London headquarters in 2006–07. Through its participation in networks of other freedom of expression INGOs, it has built up partnerships with activists and government officials, allowing it to respond quickly to changes in political contexts. When Article 19 joined IFEX's Tunisia Monitoring Group in 2005, it could not have foreseen the 2011 overthrow of President Ben Ali, and immediately after the Tunisian uprising, Article 19 relied on the connections it had fostered during its partnership with IFEX-TMG and quickly set up a regional office. The organization's physical presence in turn allowed it to gain access to legislative debates and provide advice on freedom of expression and association laws. It is also well positioned to provide training, advice, and advocacy to activists in countries like Egypt where it cannot establish formal offices because of severe gatekeeping regulations. The organization's flexibility allows it to successfully maneuver in dynamic regulatory environments. 
+
+**TODO**: Finish this sad tiny short conclusion. No time now :(. General outline:
+
+- Tunisia is possibly backsliding away from democracy, and there are draft laws to repeal post-revolutionary Decree 88 of 2011, which would constrict the regulatory environment for international NGOs and impose foreign funding restrictions and other limitations
+- ICNL, IFEX, Article 19, and others continue to advocate for improved civil liberties. Some organizations are still working with government officials to make sure new laws reverse gains in civil liberties and freedom of expression
+- Reiterate link between internal characteristics and domestic institutional environment
+- Connect this kind of advocacy to global governance
+
 [^1]:	See [https://carnegieendowment.org/2018/05/17/decentralization-in-tunisia-empowering-towns-engaging-people-pub-76376](https://carnegieendowment.org/2018/05/17/decentralization-in-tunisia-empowering-towns-engaging-people-pub-76376).
 
 [^2]:	See [https://freedomhouse.org/report/freedom-world/2018/tunisia](https://freedomhouse.org/report/freedom-world/2018/tunisia).
