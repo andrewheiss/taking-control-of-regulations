@@ -103,7 +103,9 @@ plot_civicus_map %T>%
 ```
 
 
-# Article 19 budget and staff over time
+# Article 19 
+
+## Budget and staff over time
 
 ```{r a19-budget-staff, message=FALSE}
 a19_budget <- read_csv(file.path(here(), "data", "a19_budget.csv")) 
@@ -153,7 +155,7 @@ a19_budget %>%
 ```
 
 
-# Regional expenses over time
+## Regional expenses over time
 
 Absolute expenses:
 
@@ -207,7 +209,7 @@ plot_percent %T>%
 ```
 
 
-# Regional offices
+## Regional offices
 
 ```{r a19-regional-offices, warning=FALSE, message=FALSE}
 a19_offices <- read_csv(file.path(here(), "data", "a19_offices.csv")) %>% 
@@ -236,7 +238,7 @@ plot_a19_offices %T>%
 ```
 
 
-# Reports in the Middle East
+## Reports in the Middle East
 
 Middle Eastern countries where Article 19 has issued 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the [Resources database](https://www.article19.org/resources.php?action=resourcesearch&search=test&lang=en).
 
@@ -257,4 +259,92 @@ plot_me_reports %T>%
          width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
   ggsave(., filename = file.path(here(), "output", "a19-me-reports.png"),
          width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
+```
+
+
+# AMERA UK/Egypt/International
+
+## Budget and staff over time
+
+```{r amera-budget-staff, message=FALSE}
+amera_budget <- read_csv(file.path(here(), "data", "amera_budget.csv")) %>% 
+  mutate(cr_total = `Comic Relief` + Uganda,
+         cr_percent = cr_total / Income)
+
+amera_budget_long <- amera_budget %>%
+  select(Year, Income, Expenses, Staff) %>%
+  gather(key, value, -Year) %>%
+  mutate(type = ifelse(key == "Staff", "Staff", "Budget"))
+
+plot_budget_amera <- ggplot(filter(amera_budget_long, type == "Budget"),
+                            aes(x = Year, y = value, color = key)) +
+  geom_line(size = 1) +
+  labs(x = NULL, y = "Reported amount") +
+  scale_y_continuous(labels = pound) +
+  scale_color_manual(values = c(ngo_red, ngo_blue_dk), name = NULL) +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_budget_cr <- ggplot(amera_budget, aes(x = Year, y = cr_percent)) +
+  geom_line(size = 1, colour = ngo_yellow) +
+  labs(x = NULL, y = "Percent of income\nfrom Comic Relief") +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  theme_ngo()
+
+plot_staff_amera <- ggplot(filter(amera_budget_long, type == "Staff"),
+                           aes(x = Year, y = value)) +
+  geom_line(size = 1, color = ngo_orange) +
+  labs(x = NULL, y = "Full time employees") +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera + 
+  plot_layout(ncol = 1, heights = c(1, 0.5, 0.5))
+
+plot_budget_staff_amera %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "amera-budget-staff.pdf"),
+         width = 4.5, height = 3.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "amera-budget-staff.png"),
+         width = 4.5, height = 3.5, units = "in", type = "cairo", dpi = 300)
+```
+
+Average income per year: `r amera_budget$Income %>% mean() %>% pound()`
+
+Annual income, expenses, and surplus:
+
+```{r amera-budget-staff-tbl, results="asis"}
+amera_budget %>%
+  mutate(Surplus = Income - Expenses) %>%
+  mutate_at(vars(Income, Expenses, Surplus), funs(pound)) %>% 
+  select(Year, Income, Expenses, Staff, Surplus) %>% 
+  pandoc.table(justify = "lllll")
+```
+
+## Regional partners
+
+```{r amera-regional-partners, warning=FALSE, message=FALSE}
+amera_partners <- read_csv(file.path(here(), "data", "amera_partners.csv")) %>% 
+  # Convert lat/long to actual geometry object and convert to correct projection
+  st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
+  st_transform(projection) %>% 
+  # Extract converted lat/long for use with geom_label_repel
+  mutate(long = st_coordinates(.)[, 1], lat = st_coordinates(.)[, 2])
+
+plot_amera_offices <- ggplot() +
+  geom_sf(data = world_shapes, size = 0.15, color = "black", fill = "grey90") +
+  geom_sf(data = amera_partners) +
+  geom_label_repel(data = amera_partners, seed = 1234,
+                   aes(x = long, y = lat, label = office, fill = hq), 
+                   size = 3, color = "white") +
+  coord_sf(crs = st_crs(projection), datum = NA) +
+  scale_fill_manual(values = c(ngo_blue_dk, ngo_red), guide = FALSE) +
+  theme_ngo_map()
+
+plot_amera_offices %T>% 
+  print() %T>%
+  ggsave(., filename = file.path(here(), "output", "amera-partners.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = file.path(here(), "output", "amera-partners.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
