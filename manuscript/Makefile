@@ -178,14 +178,14 @@ bib:	$(BIB)
 %-manuscript.tex:	%.md
 	$(VC_COMMAND)
 	@echo "$(WARN_COLOR)Converting Markdown to TeX using hikma-article manuscript template...$(NO_COLOR)"
-	replace_includes $< $(BLINDIFY) | \
+	replace_includes $< | move_figs_tables_to_end $(BLINDIFY) | \
 	pandoc -r markdown+simple_tables+table_captions+yaml_metadata_block+smart+raw_tex -w latex -s \
 		$(CROSSREF) \
 		--default-image-extension=pdf \
 		--filter pandoc-latex-fontsize \
 		--pdf-engine=xelatex \
 		--table-of-contents \
-		--template=$(PREFIX)/templates/xelatex-manuscript.template \
+		--template=$(PREFIX)/templates/xelatex-manuscript-single-title.template \
 		--biblatex \
 		-V $(TEX_REF) \
 		--bibliography=$(BIB_FILE) \
