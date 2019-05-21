@@ -25,7 +25,7 @@ library(here)
 
 pound <- dollar_format(prefix = "£")
 
-source(file.path(here(), "lib", "graphic-functions.R"))
+source(here("lib", "graphic-functions.R"))
 
 # Robinson projection
 projection = 54030
@@ -40,7 +40,7 @@ world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
 
 ```{r civicus-data, warning=FALSE, message=FALSE}
 # Data from the Tableau visualizations at https://monitor.civicus.org/findings/
-civicus <- read_csv(file.path(here(), "data", "civicus_monitor_2017.csv"),
+civicus <- read_csv(here("data", "civicus_monitor_2017.csv"),
                     na = "Null") %>%
   mutate(Population = as.double(Population),  # integers can't handle world population
          Rating = factor(Rating, levels = c("Open", "Narrowed", "Obstructed", 
@@ -61,7 +61,7 @@ plot_civicus_population <- ggplot(civicus_population,
                                       color = Rating)) + 
   geom_pointrangeh(aes(xmin = 0, xmax = perc_per_rating)) +
   labs(x = "Percent of world population", y = NULL) +
-  scale_x_continuous(labels = percent) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
   scale_colour_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
                                ngo_orange, ngo_red), 
                       guide = FALSE) +
@@ -69,9 +69,9 @@ plot_civicus_population <- ggplot(civicus_population,
 
 plot_civicus_population %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "civicus-population.pdf"),
+  ggsave(., filename = here("output", "civicus-population.pdf"),
          width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "civicus-population.png"),
+  ggsave(., filename = here("output", "civicus-population.png"),
          width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -96,9 +96,9 @@ plot_civicus_map <- ggplot() +
 
 plot_civicus_map %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "civicus-map.pdf"),
+  ggsave(., filename = here("output", "civicus-map.pdf"),
          width = 5.5, height = 3, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "civicus-map.png"),
+  ggsave(., filename = here("output", "civicus-map.png"),
          width = 5.5, height = 3, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -108,7 +108,7 @@ plot_civicus_map %T>%
 ## Budget and staff over time
 
 ```{r a19-budget-staff, message=FALSE}
-a19_budget <- read_csv(file.path(here(), "data", "a19_budget.csv")) 
+a19_budget <- read_csv(here("data", "a19_budget.csv")) 
 
 a19_budget_long <- a19_budget %>%
   gather(key, value, -Year) %>%
@@ -135,9 +135,9 @@ plot_budget_staff <- plot_budget + plot_staff +
 
 plot_budget_staff %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "a19-budget-staff.pdf"),
+  ggsave(., filename = here("output", "a19-budget-staff.pdf"),
          width = 4.5, height = 3, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "a19-budget-staff.png"),
+  ggsave(., filename = here("output", "a19-budget-staff.png"),
          width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -150,7 +150,7 @@ Annual income, expenses, and surplus:
 ```{r a19-budget-staff-tbl, results="asis"}
 a19_budget %>%
   mutate(Surplus = Income - Expenses) %>%
-  mutate_at(vars(Income, Expenses, Surplus), funs(pound)) %>% 
+  mutate_at(vars(Income, Expenses, Surplus), pound) %>% 
   pandoc.table(justify = "lllll")
 ```
 
@@ -160,7 +160,7 @@ a19_budget %>%
 Absolute expenses:
 
 ```{r a19-regional-expenses-abs, message=FALSE}
-a19_regional <- read_csv(file.path(here(), "data", "a19_regional_expenses.csv")) %>%
+a19_regional <- read_csv(here("data", "a19_regional_expenses.csv")) %>%
   filter(!(Category %in% c("Governance", "Fundraising", "Law and policy"))) %>%
   mutate(Category = ordered(fct_relevel(Category, "Global"))) %>%
   group_by(Year, Category) %>%
@@ -176,9 +176,9 @@ plot_regions <- ggplot(a19_regional, aes(x = Year, y = Amount)) +
 
 plot_regions %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-abs.pdf"),
+  ggsave(., filename = here("output", "a19-regions-expenses-abs.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-abs.png"),
+  ggsave(., filename = here("output", "a19-regions-expenses-abs.png"),
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -195,16 +195,16 @@ a19_percent <- a19_regional %>%
 plot_percent <- ggplot(a19_percent, aes(x = Year, y = percent)) +
   geom_line(size = 1, color = ngo_blue_dk) +
   labs(x = NULL, y = "Percent spent on region") +
-  scale_y_continuous(labels = percent) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
   expand_limits(y = 0) +
   theme_ngo(9) +
   facet_wrap(~ Category)
 
 plot_percent %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-pct.pdf"),
+  ggsave(., filename = here("output", "a19-regions-expenses-pct.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "a19-regions-expenses-pct.png"),
+  ggsave(., filename = here("output", "a19-regions-expenses-pct.png"),
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -212,7 +212,7 @@ plot_percent %T>%
 ## Regional offices
 
 ```{r a19-regional-offices, warning=FALSE, message=FALSE}
-a19_offices <- read_csv(file.path(here(), "data", "a19_offices.csv")) %>% 
+a19_offices <- read_csv(here("data", "a19_offices.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
   st_transform(projection) %>% 
@@ -231,9 +231,9 @@ plot_a19_offices <- ggplot() +
 
 plot_a19_offices %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "a19-offices.pdf"),
+  ggsave(., filename = here("output", "a19-offices.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "a19-offices.png"),
+  ggsave(., filename = here("output", "a19-offices.png"),
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -243,7 +243,7 @@ plot_a19_offices %T>%
 Middle Eastern countries where Article 19 has issued 10+ reports between 2011 and 2017, based on counts from June 19, 2017 at the [Resources database](https://www.article19.org/resources.php?action=resourcesearch&search=test&lang=en).
 
 ```{r a19-me-reports, message=FALSE, fig.width=4.5, fig.height=2}
-a19_me <- read_csv(file.path(here(), "data", "a19_me_reports.csv"))  %>%
+a19_me <- read_csv(here("data", "a19_me_reports.csv"))  %>%
   arrange(reports) %>%
   mutate(country = fct_inorder(country))
 
@@ -255,9 +255,9 @@ plot_me_reports <- ggplot(a19_me, aes(x = reports, y = country, color = hq)) +
 
 plot_me_reports %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "a19-me-reports.pdf"),
+  ggsave(., filename = here("output", "a19-me-reports.pdf"),
          width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "a19-me-reports.png"),
+  ggsave(., filename = here("output", "a19-me-reports.png"),
          width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -267,7 +267,7 @@ plot_me_reports %T>%
 ## Budget and staff over time
 
 ```{r amera-budget-staff, message=FALSE}
-amera_budget <- read_csv(file.path(here(), "data", "amera_budget.csv")) %>% 
+amera_budget <- read_csv(here("data", "amera_budget.csv")) %>% 
   mutate(cr_total = `Comic Relief` + Uganda,
          cr_percent = cr_total / Income)
 
@@ -303,9 +303,9 @@ plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera
 
 plot_budget_staff_amera %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "amera-budget-staff.pdf"),
+  ggsave(., filename = here("output", "amera-budget-staff.pdf"),
          width = 4.5, height = 3.5, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "amera-budget-staff.png"),
+  ggsave(., filename = here("output", "amera-budget-staff.png"),
          width = 4.5, height = 3.5, units = "in", type = "cairo", dpi = 300)
 ```
 
@@ -316,7 +316,7 @@ Annual income, expenses, and surplus:
 ```{r amera-budget-staff-tbl, results="asis"}
 amera_budget %>%
   mutate(Surplus = Income - Expenses) %>%
-  mutate_at(vars(Income, Expenses, Surplus), funs(pound)) %>% 
+  mutate_at(vars(Income, Expenses, Surplus), pound) %>% 
   select(Year, Income, Expenses, Staff, Surplus) %>% 
   pandoc.table(justify = "lllll")
 ```
@@ -324,7 +324,7 @@ amera_budget %>%
 ## Regional partners
 
 ```{r amera-regional-partners, warning=FALSE, message=FALSE}
-amera_partners <- read_csv(file.path(here(), "data", "amera_partners.csv")) %>% 
+amera_partners <- read_csv(here("data", "amera_partners.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
   st_transform(projection) %>% 
@@ -343,8 +343,8 @@ plot_amera_offices <- ggplot() +
 
 plot_amera_offices %T>% 
   print() %T>%
-  ggsave(., filename = file.path(here(), "output", "amera-partners.pdf"),
+  ggsave(., filename = here("output", "amera-partners.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
-  ggsave(., filename = file.path(here(), "output", "amera-partners.png"),
+  ggsave(., filename = here("output", "amera-partners.png"),
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
