@@ -51,3 +51,23 @@ theme_ngo_map <- function(base_size = 11, base_family = "RobotoCondensed-Regular
   
   ret
 }
+
+#' Convert mms to pts
+#' 
+#' Convert units specified in millimeters to typographic points. This is especially helpful when working with ggplot geoms that use size parameters
+#'
+#' @param x a numeric value (in millimeters)
+#'
+#' @return A numeric value (in points)
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#' 
+#' ggplot(mtcars, aes(x = mpg, y = wt)) +
+#'   geom_point() +
+#'   annotate(geom = "text", x = 20, y = 4, 
+#'            label = "Here's a label", size = pts(11))
+pts <- function(x) {
+  as.numeric(grid::convertUnit(grid::unit(x, "pt"), "mm"))
+}
