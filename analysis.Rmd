@@ -91,7 +91,7 @@ civicus <- read_csv(here("data", "civicus_monitor_2017.csv"),
          iso3 = countrycode(Country, "country.name", "iso3c"))
 ```
 
-```{r civicus-population}
+```{r civicus-population, fig.width=4.5, fig.height=2}
 civicus_population <- civicus %>%
   group_by(Rating) %>%
   summarise(pop_per_rating = sum(Population),
@@ -117,7 +117,7 @@ plot_civicus_population %T>%
          width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
 ```
 
-```{r civicus-map}
+```{r civicus-map, fig.width=5.5, fig.height=3}
 map_with_civicus <- world_shapes %>% 
   # Fix some Natural Earth ISO weirdness
   mutate(ISO_A3 = ifelse(ISO_A3 == "-99", as.character(ISO_A3_EH), as.character(ISO_A3))) %>% 
@@ -149,7 +149,7 @@ plot_civicus_map %T>%
 
 ## Budget and staff over time
 
-```{r a19-budget-staff, message=FALSE}
+```{r a19-budget-staff, message=FALSE, fig.width=4.5, fig.height=3}
 a19_budget <- read_csv(here("data", "a19_budget.csv")) 
 
 a19_budget_long <- a19_budget %>%
@@ -201,7 +201,7 @@ a19_budget %>%
 
 Absolute expenses:
 
-```{r a19-regional-expenses-abs, message=FALSE}
+```{r a19-regional-expenses-abs, message=FALSE, fig.width=5.5, fig.height=2.5}
 a19_regional <- read_csv(here("data", "a19_regional_expenses.csv")) %>%
   filter(!(Category %in% c("Governance", "Fundraising", "Law and policy"))) %>%
   mutate(Category = ordered(fct_relevel(Category, "Global"))) %>%
@@ -228,7 +228,7 @@ plot_regions %T>%
 
 Percent-based expenses:
 
-```{r a19-regional-expenses-pct}
+```{r a19-regional-expenses-pct, fig.width=5.5, fig.height=2.5}
 a19_percent <- a19_regional %>%
   group_by(Year) %>%
   mutate(total = sum(Amount),
@@ -253,7 +253,7 @@ plot_percent %T>%
 
 ## Regional offices
 
-```{r a19-regional-offices, warning=FALSE, message=FALSE}
+```{r a19-regional-offices, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
 a19_offices <- read_csv(here("data", "a19_offices.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
@@ -308,7 +308,7 @@ plot_me_reports %T>%
 
 ## Budget and staff over time
 
-```{r amera-budget-staff, message=FALSE}
+```{r amera-budget-staff, message=FALSE, fig.width=4.5, fig.height=3.5}
 amera_budget <- read_csv(here("data", "amera_budget.csv")) %>% 
   mutate(cr_total = `Comic Relief` + Uganda,
          cr_percent = cr_total / Income)
@@ -365,7 +365,7 @@ amera_budget %>%
 
 ## Regional partners
 
-```{r amera-regional-partners, warning=FALSE, message=FALSE}
+```{r amera-regional-partners, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
 amera_partners <- read_csv(here("data", "amera_partners.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
