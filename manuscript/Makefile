@@ -234,6 +234,9 @@ bib:	$(BIB)
 	@echo "$(WARN_COLOR)Extracing all citations into a standalone .bib file...$(NO_COLOR)"
 	bib_extract --bibtex_file $(BIB_FILE) $< $@
 
+count: 
+	Rscript "../lib/word_count.R"
+
 clean:
 	@echo "$(WARN_COLOR)Deleting all existing targets...$(NO_COLOR)"
 	rm -f $(addsuffix .html, $(BASE)) \
