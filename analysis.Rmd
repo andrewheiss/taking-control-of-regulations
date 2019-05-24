@@ -79,6 +79,7 @@ pandoc.table.return(
 ```{r dag, warning=FALSE, message=FALSE, fig.width=5, fig.height=2.75}
 theory_dag <- dagify(AE ~ PF,
                      PF ~ IC + RC,
+                     RC ~ IC,
                      FIC ~ AE,
                      labels = c("AE" = "Advocacy\neffects", 
                                 "PF" = "Programmatic\nflexibility",
@@ -87,7 +88,7 @@ theory_dag <- dagify(AE ~ PF,
                                 "FIC" = "Future\ninstitutional\nconstraints"),
                      exposure = "PF",
                      outcome = "AE") %>% 
-  tidy_dagitty(layout = "sugiyama")
+  tidy_dagitty(layout = "mds")
 
 theory_dag$data <- theory_dag$data %>% 
   mutate(linetype = ifelse(name == "AE", "dotted", "solid"))
@@ -100,15 +101,13 @@ plot_dag <- ggplot(theory_dag, aes(x = x, y = y, xend = xend, yend = yend)) +
   geom_dag_label_repel(aes(label = label), direction = "y", seed = 12345, size = 3) +
   scale_edge_linetype_manual(values = c("dotted", "solid"), guide = FALSE) +
   scale_dag() +
-  # Recreate scale_dag()'s expand scale settings
-  scale_y_reverse(expand_scale(c(0.1, 0.1))) +
-  coord_flip() +
+  scale_x_continuous(expand = expand_scale(c(0.035, 0.035))) +
   theme_void()
 
 plot_dag %T>% 
   print() %T>%
   ggsave(., filename = here("output", "theory-dag.pdf"),
-         width = 5, height = 2.75, units = "in", device = cairo_pdf) %>% 
+         width = 5, height = 2.75, units = "in", device = cairo_pdf) %>%
   ggsave(., filename = here("output", "theory-dag.png"),
          width = 5, height = 2.75, units = "in", type = "cairo", dpi = 300)
 ```
