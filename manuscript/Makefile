@@ -70,7 +70,7 @@ CROSSREF = --filter pandoc-crossref -M figPrefix:"Figure" -M eqnPrefix:"Equation
 
 # Blinding and version control
 BLINDED = FALSE
-VC_ENABLE = FALSE
+VC_ENABLE = TRUE
 
 # Blindify stuff if needed
 ifeq ($(BLINDED), TRUE)
