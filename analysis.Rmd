@@ -38,6 +38,42 @@ world_shapes <- st_read(file.path(here(), "data", "ne_110m_admin_0_countries",
   filter(ISO_A3 != "ATA")
 ```
 
+
+# Resource configurations and institutional constraints examples
+
+```{r tbl-example, results="asis"}
+resources <- c(
+  "Predictable and consistent revenue", 
+  "Highly trained managers, staff, and volunteers",
+  "Carefully managed organizational structure",
+  "Careful board oversight",
+  "Geographic reach",
+  "Collaborative relationships with other organizations",
+  "Staff with local connections"
+)
+
+constraints <- c(
+  "Donor demands and expectations",
+  "Target country regime's perception of contentiousness of INGO programming",
+  "Legal environment and regulations in target country",
+  "Political trends in target country",
+  "Accessibility of neighboring countries"
+)
+
+tbl <- tibble(`Examples of elements of resource configurations` = 
+                pandoc.list.return(resources, add.end.of.list = FALSE),
+              `Examples of institutional constraints` = 
+                pandoc.list.return(constraints, add.end.of.list = FALSE))
+
+pandoc.table.return(
+  tbl, style = "grid", keep.line.breaks = TRUE, justify = "ll",
+  caption = "Resource configurations and institutional constraints {#tbl:examples}"
+) %T>%
+  cat() %>%
+  cat(file = here("output", "tbl-examples.md"))
+```
+
+
 # Theory
 
 ```{r dag, warning=FALSE, message=FALSE, fig.width=5, fig.height=2.75}
