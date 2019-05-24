@@ -371,7 +371,7 @@ plot_budget_cr <- ggplot(amera_budget, aes(x = Year, y = cr_percent)) +
 plot_staff_amera <- ggplot(filter(amera_budget_long, type == "Staff"),
                            aes(x = Year, y = value)) +
   geom_line(size = 1, color = ngo_orange) +
-  labs(x = NULL, y = "Full time employees") +
+  labs(x = NULL, y = "Full time\nemployees") +
   expand_limits(y = 0) +
   theme_ngo()
 
@@ -381,9 +381,9 @@ plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera
 plot_budget_staff_amera %T>% 
   print() %T>%
   ggsave(., filename = here("output", "amera-budget-staff.pdf"),
-         width = 4.5, height = 3.5, units = "in", device = cairo_pdf) %>% 
+         width = 4.5, height = 3.75, units = "in", device = cairo_pdf) %>% 
   ggsave(., filename = here("output", "amera-budget-staff.png"),
-         width = 4.5, height = 3.5, units = "in", type = "cairo", dpi = 300)
+         width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 300)
 ```
 
 Average income per year: `r amera_budget$Income %>% mean() %>% pound()`
