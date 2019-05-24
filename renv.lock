@@ -570,6 +570,12 @@ RemoteRef=master
 RemoteSha=7f6f4a52d56ac7f257496c8117553851a455732a
 Hash=8e2c89838bc146e4dd3ee74ccd9c03c2
 
+[R/Package/scico]
+Package=scico
+Version=1.1.0
+Source=CRAN
+Hash=eb5ca45b434dd9cda283a06989fc88fb
+
 [R/Package/selectr]
 Package=selectr
 Version=0.4-1

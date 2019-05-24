@@ -15,6 +15,8 @@ output:
 library(tidyverse)
 library(magrittr)
 library(scales)
+library(scico)
+library(colorspace)
 library(patchwork)
 library(sf)
 library(ggrepel)
@@ -113,7 +115,9 @@ plot_dag %T>%
 ```
 
 
-# CIVICUS restrictions
+# CIVICUS restrictions 
+
+## Percent of population {.tabset .tabset-fade .tabset-pills}
 
 ```{r civicus-data, warning=FALSE, message=FALSE}
 # Data from the Tableau visualizations at https://monitor.civicus.org/findings/
@@ -126,7 +130,9 @@ civicus <- read_csv(here("data", "civicus_monitor_2017.csv"),
          iso3 = countrycode(Country, "country.name", "iso3c"))
 ```
 
-```{r civicus-population, fig.width=4.5, fig.height=2}
+### Color
+
+```{r civicus-population-color, fig.width=4.5, fig.height=2, message=FALSE}
 civicus_population <- civicus %>%
   group_by(Rating) %>%
   summarise(pop_per_rating = sum(Population),
@@ -139,12 +145,22 @@ plot_civicus_population <- ggplot(civicus_population,
   geom_pointrangeh(aes(xmin = 0, xmax = perc_per_rating)) +
   labs(x = "Percent of world population", y = NULL) +
   scale_x_continuous(labels = percent_format(accuracy = 1)) +
-  scale_colour_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
-                               ngo_orange, ngo_red), 
-                      guide = FALSE) +
+  scale_color_scico_d(palette = "roma", guide = FALSE, direction = -1) +
   theme_ngo() + theme(panel.grid.major.y = element_blank())
 
 plot_civicus_population %T>% 
+  print() %T>%
+  ggsave(., filename = here("output", "civicus-population-color.pdf"),
+         width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "civicus-population-color.png"),
+         width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r civicus-population, fig.width=4.5, fig.height=2, message=FALSE}
+(plot_civicus_population +
+    scale_color_scico_d(palette = "grayC", guide = FALSE, begin = 0.15)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "civicus-population.pdf"),
          width = 4.5, height = 2, units = "in", device = cairo_pdf) %>% 
@@ -152,7 +168,11 @@ plot_civicus_population %T>%
          width = 4.5, height = 2, units = "in", type = "cairo", dpi = 300)
 ```
 
-```{r civicus-map, fig.width=5.5, fig.height=3}
+## Map of restrictions {.tabset .tabset-fade .tabset-pills}
+
+### Color
+
+```{r civicus-map-color, fig.width=5.5, fig.height=3, message=FALSE}
 map_with_civicus <- world_shapes %>% 
   # Fix some Natural Earth ISO weirdness
   mutate(ISO_A3 = ifelse(ISO_A3 == "-99", as.character(ISO_A3_EH), as.character(ISO_A3))) %>% 
@@ -166,12 +186,23 @@ map_with_civicus <- world_shapes %>%
 plot_civicus_map <- ggplot() +
   geom_sf(data = map_with_civicus, aes(fill = Rating), size = 0.15, color = "black") +
   coord_sf(crs = st_crs(projection), datum = NA) +
-  scale_fill_manual(values = c(ngo_blue_dk, ngo_blue, ngo_yellow, 
-                               ngo_orange, ngo_red), 
-                    na.translate = FALSE, name = "Civic space") +
+  scale_fill_scico_d(palette = "roma", na.translate = FALSE, name = "Civic space", direction = -1) +
   theme_ngo_map() + theme(legend.key.size = unit(0.7, "lines"))
 
 plot_civicus_map %T>% 
+  print() %T>%
+  ggsave(., filename = here("output", "civicus-map-color.pdf"),
+         width = 5.5, height = 3, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "civicus-map-color.png"),
+         width = 5.5, height = 3, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r civicus-map, fig.width=5.5, fig.height=3, message=FALSE}
+(plot_civicus_map +
+    scale_fill_scico_d(palette = "grayC", na.translate = FALSE, 
+                       name = "Civic space", begin = 0.15)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "civicus-map.pdf"),
          width = 5.5, height = 3, units = "in", device = cairo_pdf) %>% 
@@ -182,9 +213,11 @@ plot_civicus_map %T>%
 
 # Article 19 
 
-## Budget and staff over time
+## Budget and staff over time {.tabset .tabset-fade .tabset-pills}
 
-```{r a19-budget-staff, message=FALSE, fig.width=4.5, fig.height=3}
+### Color
+
+```{r a19-budget-staff-color, message=FALSE, fig.width=4.5, fig.height=3}
 a19_budget <- read_csv(here("data", "a19_budget.csv")) 
 
 a19_budget_long <- a19_budget %>%
@@ -196,7 +229,7 @@ plot_budget <- ggplot(filter(a19_budget_long, type == "Budget"),
   geom_line(size = 1) +
   labs(x = NULL, y = "Reported amount") +
   scale_y_continuous(labels = pound) +
-  scale_color_manual(values = c(ngo_red, ngo_blue_dk), name = NULL) +
+  scale_color_scico_d(palette = "roma", name = NULL) +
   expand_limits(y = 0) +
   theme_ngo()
 
@@ -212,13 +245,37 @@ plot_budget_staff <- plot_budget + plot_staff +
 
 plot_budget_staff %T>% 
   print() %T>%
+  ggsave(., filename = here("output", "a19-budget-staff-color.pdf"),
+         width = 4.5, height = 3, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "a19-budget-staff-color.png"),
+         width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r a19-budget-staff, message=FALSE, fig.width=4.5, fig.height=3}
+plot_budget <- plot_budget +
+  scale_color_scico_d(palette = "grayC", name = NULL, begin = 0.2)
+
+plot_staff <- ggplot(filter(a19_budget_long, type == "Staff"),
+                     aes(x = Year, y = value)) +
+  geom_line(size = 1, color = "grey50") +
+  labs(x = NULL, y = "Full time employees") +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_budget_staff <- plot_budget + plot_staff + 
+  plot_layout(ncol = 1, heights = c(1, 0.5))
+
+plot_budget_staff %T>% 
+  print() %T>%
   ggsave(., filename = here("output", "a19-budget-staff.pdf"),
          width = 4.5, height = 3, units = "in", device = cairo_pdf) %>% 
   ggsave(., filename = here("output", "a19-budget-staff.png"),
          width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300)
 ```
 
-\
+### Details
 
 Average income per year: `r a19_budget$Income %>% mean() %>% pound()`
 
@@ -232,9 +289,9 @@ a19_budget %>%
 ```
 
 
-## Regional expenses over time
+## Regional expenses over time {.tabset .tabset-fade .tabset-pills}
 
-Absolute expenses:
+### Absolute expenses
 
 ```{r a19-regional-expenses-abs, message=FALSE, fig.width=5.5, fig.height=2.5}
 a19_regional <- read_csv(here("data", "a19_regional_expenses.csv")) %>%
@@ -259,9 +316,7 @@ plot_regions %T>%
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
 
-\
-
-Percent-based expenses:
+### Percent-based expenses
 
 ```{r a19-regional-expenses-pct, fig.width=5.5, fig.height=2.5}
 a19_percent <- a19_regional %>%
@@ -286,9 +341,11 @@ plot_percent %T>%
 ```
 
 
-## Regional offices
+## Regional offices {.tabset .tabset-fade .tabset-pills}
 
-```{r a19-regional-offices, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
+### Color
+
+```{r a19-regional-offices-color, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
 a19_offices <- read_csv(here("data", "a19_offices.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
@@ -303,10 +360,22 @@ plot_a19_offices <- ggplot() +
                    aes(x = long, y = lat, label = office, fill = hq), 
                    size = 3, color = "white") +
   coord_sf(crs = st_crs(projection), datum = NA) +
-  scale_fill_manual(values = c(ngo_blue_dk, ngo_red), guide = FALSE) +
+  scale_fill_scico_d(palette = "roma", guide = FALSE) +
   theme_ngo_map()
 
 plot_a19_offices %T>% 
+  print() %T>%
+  ggsave(., filename = here("output", "a19-offices-color.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "a19-offices-color.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r a19-regional-offices, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
+(plot_a19_offices +
+   scale_fill_scico_d(palette = "grayC", guide = FALSE, begin = 0.5)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "a19-offices.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
@@ -341,9 +410,11 @@ plot_me_reports %T>%
 
 # AMERA UK/Egypt/International
 
-## Budget and staff over time
+## Budget and staff over time {.tabset .tabset-fade .tabset-pills}
 
-```{r amera-budget-staff, message=FALSE, fig.width=4.5, fig.height=3.5}
+### Color
+
+```{r amera-budget-staff-color, message=FALSE, fig.width=4.5, fig.height=3.5}
 amera_budget <- read_csv(here("data", "amera_budget.csv")) %>% 
   mutate(cr_total = `Comic Relief` + Uganda,
          cr_percent = cr_total / Income)
@@ -358,7 +429,7 @@ plot_budget_amera <- ggplot(filter(amera_budget_long, type == "Budget"),
   geom_line(size = 1) +
   labs(x = NULL, y = "Reported amount") +
   scale_y_continuous(labels = pound) +
-  scale_color_manual(values = c(ngo_red, ngo_blue_dk), name = NULL) +
+  scale_color_scico_d(palette = "roma", name = NULL) +
   expand_limits(y = 0) +
   theme_ngo()
 
@@ -380,11 +451,43 @@ plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera
 
 plot_budget_staff_amera %T>% 
   print() %T>%
+  ggsave(., filename = here("output", "amera-budget-staff-color.pdf"),
+         width = 4.5, height = 3.75, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "amera-budget-staff-color.png"),
+         width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r amera-budget-staff, message=FALSE, fig.width=4.5, fig.height=3.5}
+plot_budget_amera <- plot_budget_amera + 
+  scale_color_scico_d(palette = "grayC", name = NULL, begin = 0.2)
+
+plot_budget_cr <- ggplot(amera_budget, aes(x = Year, y = cr_percent)) +
+  geom_line(size = 1, colour = "grey40") +
+  labs(x = NULL, y = "Percent of income\nfrom Comic Relief") +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  theme_ngo()
+
+plot_staff_amera <- ggplot(filter(amera_budget_long, type == "Staff"),
+                           aes(x = Year, y = value)) +
+  geom_line(size = 1, color = "grey70") +
+  labs(x = NULL, y = "Full time\nemployees") +
+  expand_limits(y = 0) +
+  theme_ngo()
+
+plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera + 
+  plot_layout(ncol = 1, heights = c(1, 0.5, 0.5))
+
+plot_budget_staff_amera %T>% 
+  print() %T>%
   ggsave(., filename = here("output", "amera-budget-staff.pdf"),
          width = 4.5, height = 3.75, units = "in", device = cairo_pdf) %>% 
   ggsave(., filename = here("output", "amera-budget-staff.png"),
          width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 300)
 ```
+
+### Details
 
 Average income per year: `r amera_budget$Income %>% mean() %>% pound()`
 
@@ -398,9 +501,11 @@ amera_budget %>%
   pandoc.table(justify = "lllll")
 ```
 
-## Regional partners
+## Regional partners {.tabset .tabset-fade .tabset-pills}
 
-```{r amera-regional-partners, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
+### Color
+
+```{r amera-regional-partners-color, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
 amera_partners <- read_csv(here("data", "amera_partners.csv")) %>% 
   # Convert lat/long to actual geometry object and convert to correct projection
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
@@ -415,13 +520,26 @@ plot_amera_offices <- ggplot() +
                    aes(x = long, y = lat, label = office, fill = hq), 
                    size = 3, color = "white") +
   coord_sf(crs = st_crs(projection), datum = NA) +
-  scale_fill_manual(values = c(ngo_blue_dk, ngo_red), guide = FALSE) +
+  scale_fill_scico_d(palette = "roma", guide = FALSE) +
   theme_ngo_map()
 
 plot_amera_offices %T>% 
+  print() %T>%
+  ggsave(., filename = here("output", "amera-partners-color.pdf"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+  ggsave(., filename = here("output", "amera-partners-color.png"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+```
+
+### Grayscale
+
+```{r amera-regional-partners, warning=FALSE, message=FALSE, fig.width=5.5, fig.height=2.5}
+(plot_amera_offices +
+   scale_fill_scico_d(palette = "grayC", guide = FALSE, begin = 0.5)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "amera-partners.pdf"),
          width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
   ggsave(., filename = here("output", "amera-partners.png"),
          width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
 ```
+
