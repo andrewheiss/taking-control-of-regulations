@@ -11,6 +11,7 @@ admin
 submissions
 presentations
 !output/*.pdf
+*.tiff
 
 # R stuff
 .Rproj.user

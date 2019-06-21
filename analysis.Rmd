@@ -109,9 +109,13 @@ plot_dag <- ggplot(theory_dag, aes(x = x, y = y, xend = xend, yend = yend)) +
 plot_dag %T>% 
   print() %T>%
   ggsave(., filename = here("output", "theory-dag.pdf"),
-         width = 5, height = 2.75, units = "in", device = cairo_pdf) %>%
+         width = 5, height = 2.75, units = "in", device = cairo_pdf) %T>%
   ggsave(., filename = here("output", "theory-dag.png"),
-         width = 5, height = 2.75, units = "in", type = "cairo", dpi = 300)
+         width = 5, height = 2.75, units = "in", type = "cairo", dpi = 300) %T>% 
+  ggsave(., filename = here("output", "theory-dag.tiff"),
+         width = 5, height = 2.75, units = "in", type = "cairo", dpi = 600) %>% 
+  ggsave(., filename = here("output", "theory-dag.eps"),
+         width = 5, height = 2.75, units = "in", device = cairo_ps, fallback_resolution = 600) 
 ```
 
 
@@ -270,9 +274,13 @@ plot_budget_staff <- plot_budget + plot_staff +
 plot_budget_staff %T>% 
   print() %T>%
   ggsave(., filename = here("output", "a19-budget-staff.pdf"),
-         width = 4.5, height = 3, units = "in", device = cairo_pdf) %>% 
+         width = 4.5, height = 3, units = "in", device = cairo_pdf) %T>% 
   ggsave(., filename = here("output", "a19-budget-staff.png"),
-         width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300)
+         width = 4.5, height = 3, units = "in", type = "cairo", dpi = 300) %T>% 
+  ggsave(., filename = here("output", "a19-budget-staff.tiff"),
+         width = 4.5, height = 3, units = "in", type = "cairo", dpi = 600) %>% 
+  ggsave(., filename = here("output", "a19-budget-staff.eps"),
+         width = 4.5, height = 3, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
 
 ### Details
@@ -356,7 +364,7 @@ a19_offices <- read_csv(here("data", "a19_offices.csv")) %>%
 plot_a19_offices <- ggplot() +
   geom_sf(data = world_shapes, size = 0.15, color = "black", fill = "grey90") +
   geom_sf(data = a19_offices) +
-  geom_label_repel(data = a19_offices, seed = 1234,
+  geom_label_repel(data = a19_offices, seed = 12345,
                    aes(x = long, y = lat, label = office, fill = hq), 
                    size = 3, color = "white") +
   coord_sf(crs = st_crs(projection), datum = NA) +
@@ -378,9 +386,13 @@ plot_a19_offices %T>%
    scale_fill_scico_d(palette = "grayC", guide = FALSE, begin = 0.5)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "a19-offices.pdf"),
-         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %T>% 
   ggsave(., filename = here("output", "a19-offices.png"),
-         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300) %T>% 
+  ggsave(., filename = here("output", "a19-offices.tiff"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 600) %>% 
+  ggsave(., filename = here("output", "a19-offices.eps"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
 
 
@@ -482,9 +494,13 @@ plot_budget_staff_amera <- plot_budget_amera + plot_budget_cr + plot_staff_amera
 plot_budget_staff_amera %T>% 
   print() %T>%
   ggsave(., filename = here("output", "amera-budget-staff.pdf"),
-         width = 4.5, height = 3.75, units = "in", device = cairo_pdf) %>% 
+         width = 4.5, height = 3.75, units = "in", device = cairo_pdf) %T>% 
   ggsave(., filename = here("output", "amera-budget-staff.png"),
-         width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 300)
+         width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 300) %T>% 
+  ggsave(., filename = here("output", "amera-budget-staff.tiff"),
+         width = 4.5, height = 3.75, units = "in", type = "cairo", dpi = 600) %>% 
+  ggsave(., filename = here("output", "amera-budget-staff.eps"),
+         width = 4.5, height = 3.75, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
 
 ### Details
@@ -516,7 +532,7 @@ amera_partners <- read_csv(here("data", "amera_partners.csv")) %>%
 plot_amera_offices <- ggplot() +
   geom_sf(data = world_shapes, size = 0.15, color = "black", fill = "grey90") +
   geom_sf(data = amera_partners) +
-  geom_label_repel(data = amera_partners, seed = 1234,
+  geom_label_repel(data = amera_partners, seed = 12345,
                    aes(x = long, y = lat, label = office, fill = hq), 
                    size = 3, color = "white") +
   coord_sf(crs = st_crs(projection), datum = NA) +
@@ -538,8 +554,12 @@ plot_amera_offices %T>%
    scale_fill_scico_d(palette = "grayC", guide = FALSE, begin = 0.5)) %T>% 
   print() %T>%
   ggsave(., filename = here("output", "amera-partners.pdf"),
-         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %>% 
+         width = 5.5, height = 2.5, units = "in", device = cairo_pdf) %T>% 
   ggsave(., filename = here("output", "amera-partners.png"),
-         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300)
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 300) %T>% 
+  ggsave(., filename = here("output", "amera-partners.tiff"),
+         width = 5.5, height = 2.5, units = "in", type = "cairo", dpi = 600) %>% 
+  ggsave(., filename = here("output", "amera-partners.eps"),
+         width = 5.5, height = 2.5, units = "in", device = cairo_ps, fallback_resolution = 600)
 ```
 
