@@ -7,6 +7,8 @@ author:
   dept-address: Atlanta, GA 30303, USA
   email: aheiss@gsu.edu
 date: June 20, 2019
+published: >- 
+    Published in *Interest Groups and Advocacy,* 8, no. 3 (September 2019): 356–75, doi: [10.1057/s41309-019-00061-0](https://doi.org/10.1057/s41309-019-00061-0).
 reference-section-title: References
 notes-after-punctuation: false
 toc: false
